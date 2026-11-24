@@ -93,7 +93,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
     const result = await readApiResponse(res)
     const isDuplicate = !result.success && res.status === 409
     toast({
-      title: result.success ? "Success" : isDuplicate ? "Oops! Patron already exists" : "Error",
+      title: result.success ? "Success" : isDuplicate ? "Oops! Book already exists" : "Error",
       description: result.message,
       variant: result.success ? "default" : "destructive",
       className: isDuplicate
@@ -156,7 +156,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
     const result = await res.json()
     const isDuplicate = !result.success && res.status === 409
     toast({
-      title: result.success ? "Success" : isDuplicate ? "Oops! Patron already exists" : "Error",
+      title: result.success ? "Success" : isDuplicate ? "Oops! Book already exists" : "Error",
       description: result.message,
       variant: result.success ? "default" : "destructive",
       className: isDuplicate
