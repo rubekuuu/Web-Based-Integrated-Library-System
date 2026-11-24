@@ -89,7 +89,7 @@ export function TransactionHistory() {
   const resetPage = <T,>(setter: (value: T) => void, value: T) => { setter(value); setPage(1) }
 
   return (
-    <Card className="mt-6 border-emerald-100 shadow-sm dark:border-slate-800">
+    <Card className="mt-6 border-border shadow-sm">
       <CardHeader className="gap-4">
         <div>
           <CardTitle className="flex items-center gap-2 text-lg"><History className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />Transaction History</CardTitle>
@@ -131,17 +131,17 @@ export function TransactionHistory() {
           : filtered.length === 0 ? <div className="rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center dark:border-slate-700"><History className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600" /><p className="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">No transactions found</p><p className="mt-1 text-xs text-muted-foreground">Try changing your filters or record a library transaction.</p></div>
           : <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Showing {firstRecord}–{lastRecord} of {filtered.length} records</p><p className="text-xs text-muted-foreground">20 records per page</p></div>
-            <div className="overflow-x-auto rounded-lg border border-slate-100">
+            <div className="overflow-x-auto rounded-lg border border-border bg-card">
               <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900 dark:text-slate-400"><tr><th className="px-4 py-3 font-medium">Date &amp; time</th><th className="px-4 py-3 font-medium">Transaction</th><th className="px-4 py-3 font-medium">Book / Patron</th><th className="px-4 py-3 font-medium">Patron</th><th className="px-4 py-3 text-right font-medium">Quantity</th></tr></thead>
-                <tbody className="divide-y divide-slate-100">{pageItems.map((entry) => {
+                <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-4 py-3 font-medium">Date &amp; time</th><th className="px-4 py-3 font-medium">Transaction</th><th className="px-4 py-3 font-medium">Book / Patron</th><th className="px-4 py-3 font-medium">Patron</th><th className="px-4 py-3 text-right font-medium">Quantity</th></tr></thead>
+                <tbody className="divide-y divide-border">{pageItems.map((entry) => {
                   const patronEvent = entry.transaction_type === "patron_add" || entry.transaction_type === "patron_remove"
-                  return <tr key={entry.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/70">
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-slate-300">{new Date(entry.occurred_at).toLocaleString()}</td>
+                  return <tr key={entry.id} className="transition-colors hover:bg-zinc-100/70 dark:hover:bg-zinc-800/60">
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{new Date(entry.occurred_at).toLocaleString()}</td>
                     <td className="px-4 py-3"><TransactionType type={entry.transaction_type} extensionDays={entry.extension_days} /></td>
-                    <td className="px-4 py-3"><p className="font-medium text-slate-800 dark:text-slate-100">{patronEvent ? "Patron record" : entry.book_title || "—"}</p><p className="text-xs text-muted-foreground">{patronEvent ? "No book associated" : entry.book_id != null ? `Book ID: ${entry.book_id}` : "—"}</p></td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{entry.patron_name ? <>{entry.patron_name}<span className="ml-1 text-xs text-muted-foreground">(#{entry.patron_id})</span></> : <span className="text-muted-foreground">—</span>}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{patronEvent ? "—" : entry.quantity}</td>
+                    <td className="px-4 py-3"><p className="font-medium text-foreground">{patronEvent ? "Patron record" : entry.book_title || "—"}</p><p className="text-xs text-muted-foreground">{patronEvent ? "No book associated" : entry.book_id != null ? `Book ID: ${entry.book_id}` : "—"}</p></td>
+                    <td className="px-4 py-3 text-muted-foreground">{entry.patron_name ? <>{entry.patron_name}<span className="ml-1 text-xs text-muted-foreground">(#{entry.patron_id})</span></> : <span className="text-muted-foreground">—</span>}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-foreground">{patronEvent ? "—" : entry.quantity}</td>
                   </tr>
                 })}</tbody>
               </table>

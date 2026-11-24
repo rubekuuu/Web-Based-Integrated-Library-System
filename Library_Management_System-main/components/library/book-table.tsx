@@ -152,7 +152,7 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
         <Table className="min-w-[68.5rem] table-fixed">
           <TableHeader>
             <TableRow>
@@ -236,7 +236,7 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
                   <TableCell className={`w-[6.5rem] text-sm ${book.is_overdue ? "font-medium text-red-600" : "text-muted-foreground"}`}>
                     {book.due_return_date || "-"}
                   </TableCell>
-                  <TableCell className="sticky right-0 z-10 w-[6.5rem] bg-background text-right shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.25)] group-hover:bg-muted/50">
+                  <TableCell className="sticky right-0 z-10 w-[6.5rem] bg-background text-right shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.25)] group-hover:bg-zinc-100/70 dark:group-hover:bg-zinc-800/60">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => onEdit(book)}>
                         <Pencil className="h-4 w-4" />

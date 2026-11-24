@@ -94,7 +94,7 @@ export function PatronTable({ patrons, books, onEdit, onDelete, onExtend }: Patr
         />
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-lg border border-border bg-card text-card-foreground shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -126,7 +126,7 @@ export function PatronTable({ patrons, books, onEdit, onDelete, onExtend }: Patr
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-emerald-200 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900 dark:border-slate-700 dark:text-emerald-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+                      className="border-emerald-200 text-emerald-800 hover:border-zinc-300 hover:bg-zinc-100 hover:text-emerald-900 dark:border-slate-700 dark:text-emerald-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
                       onClick={() => setSelectedPatron(patron)}
                       aria-label={`View borrowed books for ${patron.name}: ${patron.books_checked_out.length} of ${MAX_BORROWED_BOOKS_PER_PATRON} checked out`}
                       aria-haspopup="dialog"
