@@ -178,7 +178,7 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
               <TableHead className="w-[6.5rem] cursor-pointer" onClick={() => handleSort("due_return_date")}>
                 <div className="flex items-center gap-1">Due Date <SortIcon field="due_return_date" /></div>
               </TableHead>
-              <TableHead className="sticky right-0 z-20 w-[6.5rem] bg-background text-right shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.25)]">
+              <TableHead className="sticky right-0 z-20 w-[6.5rem] bg-muted/50 text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -236,7 +236,7 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
                   <TableCell className={`w-[6.5rem] text-sm ${book.is_overdue ? "font-medium text-red-600" : "text-muted-foreground"}`}>
                     {book.due_return_date || "-"}
                   </TableCell>
-                  <TableCell className="sticky right-0 z-10 w-[6.5rem] bg-background text-right shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.25)] group-hover:bg-zinc-100/70 dark:group-hover:bg-zinc-800/60">
+                  <TableCell className="sticky right-0 z-10 w-[6.5rem] bg-card text-right group-hover:bg-zinc-100/70 dark:group-hover:bg-zinc-800/60">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => onEdit(book)}>
                         <Pencil className="h-4 w-4" />
