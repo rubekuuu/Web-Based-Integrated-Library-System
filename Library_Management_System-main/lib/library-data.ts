@@ -28,7 +28,7 @@ export async function loadBooks(): Promise<Book[]> {
   await ensureDatabaseSchema()
   const rows = await sql`
     SELECT b.id, b.title, b.author, b.genre, b.year, b.status, b.borrowed_date,
-           CASE WHEN b.cover_image_key IS NULL THEN NULL ELSE '/api/books/' || b.id::text || '/cover' END AS cover_image,
+           CASE WHEN b.cover_image_key IS NULL THEN NULL ELSE '/api/books/' || b.id::text || '/cover?v=' || md5(b.cover_image_key) END AS cover_image,
            l.due_return_date::text AS due_return_date, l.extended_at
     FROM books b
     LEFT JOIN loans l ON l.book_id = b.id
@@ -60,7 +60,7 @@ export async function getBookById(id: number): Promise<Book | undefined> {
   await ensureDatabaseSchema()
   const rows = await sql`
     SELECT b.id, b.title, b.author, b.genre, b.year, b.status, b.borrowed_date,
-           CASE WHEN b.cover_image_key IS NULL THEN NULL ELSE '/api/books/' || b.id::text || '/cover' END AS cover_image,
+           CASE WHEN b.cover_image_key IS NULL THEN NULL ELSE '/api/books/' || b.id::text || '/cover?v=' || md5(b.cover_image_key) END AS cover_image,
            l.due_return_date::text AS due_return_date, l.extended_at
     FROM books b
     LEFT JOIN loans l ON l.book_id = b.id
@@ -303,14 +303,14 @@ export async function getStatistics(): Promise<LibraryStats> {
     `,
     sql`
       SELECT id, title, author, genre, year,
-             CASE WHEN cover_image_key IS NULL THEN NULL ELSE '/api/books/' || id::text || '/cover' END AS cover_image
+             CASE WHEN cover_image_key IS NULL THEN NULL ELSE '/api/books/' || id::text || '/cover?v=' || md5(cover_image_key) END AS cover_image
       FROM books
       ORDER BY created_at DESC, id DESC
       LIMIT 1
     `,
     sql`
       SELECT id, title, author, genre, year, borrow_count,
-             CASE WHEN cover_image_key IS NULL THEN NULL ELSE '/api/books/' || id::text || '/cover' END AS cover_image
+             CASE WHEN cover_image_key IS NULL THEN NULL ELSE '/api/books/' || id::text || '/cover?v=' || md5(cover_image_key) END AS cover_image
       FROM books
       WHERE borrow_count > 0
       ORDER BY borrow_count DESC, id ASC
