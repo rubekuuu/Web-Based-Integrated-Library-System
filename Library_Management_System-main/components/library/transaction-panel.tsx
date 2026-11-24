@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeftRight, BookOpen, UserCheck } from "lucide-react"
+import { MAX_BORROWED_BOOKS_PER_PATRON } from "@/lib/constants"
 import { SearchablePicker, type SearchablePickerOption } from "./searchable-picker"
 
 interface TransactionPanelProps {
@@ -32,6 +33,8 @@ export function TransactionPanel({ books, patrons, onBorrow, onReturn }: Transac
   const [returnLoading, setReturnLoading] = useState(false)
 
   const availableBooks = safeBooks.filter((b) => b.status === "Available")
+  const selectedBorrowPatron = safePatrons.find((patron) => patron.id.toString() === borrowPatronId)
+  const borrowLimitReached = (selectedBorrowPatron?.books_checked_out.length ?? 0) >= MAX_BORROWED_BOOKS_PER_PATRON
   const selectedPatronForReturn = safePatrons.find((p) => p.id.toString() === returnPatronId)
   const booksToReturn = selectedPatronForReturn
     ? safeBooks.filter((b) => selectedPatronForReturn.books_checked_out.includes(b.id))
@@ -41,7 +44,7 @@ export function TransactionPanel({ books, patrons, onBorrow, onReturn }: Transac
     items.map((patron) => ({
       value: patron.id.toString(),
       label: patron.name,
-      detail: `Patron ID: ${patron.id}`,
+      detail: `Patron ID: ${patron.id} · ${patron.books_checked_out.length}/${MAX_BORROWED_BOOKS_PER_PATRON} books checked out`,
       searchText: `${patron.name} ${patron.id}`,
     }))
 
@@ -113,6 +116,14 @@ export function TransactionPanel({ books, patrons, onBorrow, onReturn }: Transac
             onQueryChange={setBorrowPatronQuery}
             onSelect={(value) => setBorrowPatronId(value)}
           />
+          <p
+            className={`-mt-2 text-sm ${borrowLimitReached ? "text-destructive" : "text-muted-foreground"}`}
+            aria-live="polite"
+          >
+            {borrowLimitReached
+              ? `This patron has reached the ${MAX_BORROWED_BOOKS_PER_PATRON}-book limit. Return a book before borrowing another.`
+              : `Each patron may borrow up to ${MAX_BORROWED_BOOKS_PER_PATRON} books at a time.`}
+          </p>
           <SearchablePicker
             id="borrow-book"
             label="Available book"
@@ -141,6 +152,7 @@ export function TransactionPanel({ books, patrons, onBorrow, onReturn }: Transac
             disabled={
               !borrowBookId ||
               !borrowPatronId ||
+              borrowLimitReached ||
               !borrowDurationDays ||
               !Number.isInteger(Number(borrowDurationDays)) ||
               Number(borrowDurationDays) < 1 ||
@@ -181,18 +193,20 @@ export function TransactionPanel({ books, patrons, onBorrow, onReturn }: Transac
           <div className="space-y-2">
             <Label>Select book to return</Label>
             <Select value={returnBookId} onValueChange={setReturnBookId} disabled={!returnPatronId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a checked-out book" />
+              <SelectTrigger className="w-full min-w-0">
+                <SelectValue placeholder="Choose a checked-out book" className="min-w-0 flex-1 truncate" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)]">
                 {booksToReturn.length === 0 ? (
                   <SelectItem value="none" disabled>
                     Select a patron first
                   </SelectItem>
                 ) : (
                   booksToReturn.map((book) => (
-                    <SelectItem key={book.id} value={book.id.toString()}>
-                      {book.title} by {book.author}
+                    <SelectItem key={book.id} value={book.id.toString()} className="min-w-0">
+                      <span className="block min-w-0 truncate" title={`${book.title} by ${book.author}`}>
+                        {book.title} by {book.author}
+                      </span>
                     </SelectItem>
                   ))
                 )}

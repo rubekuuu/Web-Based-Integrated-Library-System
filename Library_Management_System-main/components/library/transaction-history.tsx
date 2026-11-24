@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react"
 import useSWR from "swr"
 import {
-  ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight,
+  ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, Clock3,
   BookPlus, BookX, History, Search, UserMinus, UserPlus,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { TransactionHistoryEntry } from "@/lib/library-data"
 
@@ -25,25 +26,36 @@ const transactionLabels: Record<TransactionHistoryEntry["transaction_type"], str
   removal: "Book removed",
   borrow: "Borrowed",
   return: "Returned",
+  extend: "Due date extended",
   patron_add: "Patron added",
   patron_remove: "Patron removed",
 }
 
-function TransactionType({ type }: { type: TransactionHistoryEntry["transaction_type"] }) {
+function TransactionType({
+  type,
+  extensionDays,
+}: {
+  type: TransactionHistoryEntry["transaction_type"]
+  extensionDays: number | null
+}) {
   const styles: Record<TransactionHistoryEntry["transaction_type"], string> = {
-    arrival: "bg-sky-50 text-sky-700",
-    removal: "bg-rose-50 text-rose-700",
-    borrow: "bg-amber-50 text-amber-700",
-    return: "bg-emerald-50 text-emerald-700",
-    patron_add: "bg-violet-50 text-violet-700",
-    patron_remove: "bg-orange-50 text-orange-700",
+    arrival: "bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
+    removal: "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
+    borrow: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    return: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+    extend: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300",
+    patron_add: "bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
+    patron_remove: "bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
   }
   const icons = {
     arrival: BookPlus, removal: BookX, borrow: ArrowUpRight,
-    return: ArrowDownLeft, patron_add: UserPlus, patron_remove: UserMinus,
+    return: ArrowDownLeft, extend: Clock3, patron_add: UserPlus, patron_remove: UserMinus,
   }
   const Icon = icons[type]
-  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${styles[type]}`}><Icon className="h-3.5 w-3.5" />{transactionLabels[type]}</span>
+  const label = type === "extend" && extensionDays
+    ? `Extended +${extensionDays} day${extensionDays === 1 ? "" : "s"}`
+    : transactionLabels[type]
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${styles[type]}`}><Icon className="h-3.5 w-3.5" />{label}</span>
 }
 
 function localDate(value: string) {
@@ -77,17 +89,24 @@ export function TransactionHistory() {
   const resetPage = <T,>(setter: (value: T) => void, value: T) => { setter(value); setPage(1) }
 
   return (
-    <Card className="mt-6 border-emerald-100 shadow-sm">
+    <Card className="mt-6 border-emerald-100 shadow-sm dark:border-slate-800">
       <CardHeader className="gap-4">
         <div>
-          <CardTitle className="flex items-center gap-2 text-lg"><History className="h-5 w-5 text-emerald-700" />Transaction History</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-lg"><History className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />Transaction History</CardTitle>
           <p className="mt-1 text-sm text-muted-foreground">A record of book activity and patron registrations/removals</p>
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="relative min-w-0">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={patronFilter} onChange={(e) => resetPage(setPatronFilter, e.target.value)} placeholder="Filter by patron name" className="pl-9" aria-label="Filter by patron name" />
-          </div>
+          <InputGroup className="min-w-0">
+            <InputGroupAddon align="inline-start">
+              <Search aria-hidden="true" />
+            </InputGroupAddon>
+            <InputGroupInput
+              value={patronFilter}
+              onChange={(e) => resetPage(setPatronFilter, e.target.value)}
+              placeholder="Filter by patron name"
+              aria-label="Filter by patron name"
+            />
+          </InputGroup>
           <Select value={typeFilter} onValueChange={(v) => resetPage(setTypeFilter, v)}>
             <SelectTrigger aria-label="Filter by transaction type"><SelectValue placeholder="All transaction types" /></SelectTrigger>
             <SelectContent>
@@ -96,6 +115,7 @@ export function TransactionHistory() {
               <SelectItem value="removal">Book removals</SelectItem>
               <SelectItem value="borrow">Borrowing</SelectItem>
               <SelectItem value="return">Returning</SelectItem>
+              <SelectItem value="extend">Due date extensions</SelectItem>
               <SelectItem value="patron_add">Patrons added</SelectItem>
               <SelectItem value="patron_remove">Patrons removed</SelectItem>
             </SelectContent>
@@ -103,25 +123,25 @@ export function TransactionHistory() {
           <div><label htmlFor="history-from-date" className="mb-1 block text-xs font-medium text-muted-foreground">From date</label><Input id="history-from-date" type="date" value={fromDate} max={toDate || undefined} onChange={(e) => resetPage(setFromDate, e.target.value)} /></div>
           <div><label htmlFor="history-to-date" className="mb-1 block text-xs font-medium text-muted-foreground">To date</label><Input id="history-to-date" type="date" value={toDate} min={fromDate || undefined} onChange={(e) => resetPage(setToDate, e.target.value)} /></div>
         </div>
-        {(patronFilter || typeFilter !== "all" || fromDate || toDate) && <div className="flex justify-end"><button type="button" onClick={() => { setPatronFilter(""); setTypeFilter("all"); setFromDate(""); setToDate(""); setPage(1) }} className="text-xs font-medium text-emerald-700 hover:underline">Clear filters</button></div>}
+        {(patronFilter || typeFilter !== "all" || fromDate || toDate) && <div className="flex justify-end"><button type="button" onClick={() => { setPatronFilter(""); setTypeFilter("all"); setFromDate(""); setToDate(""); setPage(1) }} className="text-xs font-medium text-emerald-700 hover:underline dark:text-emerald-300">Clear filters</button></div>}
       </CardHeader>
       <CardContent>
         {isLoading ? <p className="py-10 text-center text-sm text-muted-foreground">Loading transaction history...</p>
           : error ? <p className="py-10 text-center text-sm text-rose-600">{error.message}</p>
-          : filtered.length === 0 ? <div className="rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center"><History className="mx-auto h-8 w-8 text-slate-300" /><p className="mt-2 text-sm font-medium text-slate-700">No transactions found</p><p className="mt-1 text-xs text-muted-foreground">Try changing your filters or record a library transaction.</p></div>
+          : filtered.length === 0 ? <div className="rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center dark:border-slate-700"><History className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600" /><p className="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">No transactions found</p><p className="mt-1 text-xs text-muted-foreground">Try changing your filters or record a library transaction.</p></div>
           : <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Showing {firstRecord}–{lastRecord} of {filtered.length} records</p><p className="text-xs text-muted-foreground">20 records per page</p></div>
             <div className="overflow-x-auto rounded-lg border border-slate-100">
               <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3 font-medium">Date &amp; time</th><th className="px-4 py-3 font-medium">Transaction</th><th className="px-4 py-3 font-medium">Book / Patron</th><th className="px-4 py-3 font-medium">Patron</th><th className="px-4 py-3 text-right font-medium">Quantity</th></tr></thead>
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900 dark:text-slate-400"><tr><th className="px-4 py-3 font-medium">Date &amp; time</th><th className="px-4 py-3 font-medium">Transaction</th><th className="px-4 py-3 font-medium">Book / Patron</th><th className="px-4 py-3 font-medium">Patron</th><th className="px-4 py-3 text-right font-medium">Quantity</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">{pageItems.map((entry) => {
                   const patronEvent = entry.transaction_type === "patron_add" || entry.transaction_type === "patron_remove"
-                  return <tr key={entry.id} className="hover:bg-slate-50/70">
-                    <td className="whitespace-nowrap px-4 py-3 text-slate-600">{new Date(entry.occurred_at).toLocaleString()}</td>
-                    <td className="px-4 py-3"><TransactionType type={entry.transaction_type} /></td>
-                    <td className="px-4 py-3"><p className="font-medium text-slate-800">{patronEvent ? "Patron record" : entry.book_title || "—"}</p><p className="text-xs text-muted-foreground">{patronEvent ? "No book associated" : entry.book_id != null ? `Book ID: ${entry.book_id}` : "—"}</p></td>
-                    <td className="px-4 py-3 text-slate-600">{entry.patron_name ? <>{entry.patron_name}<span className="ml-1 text-xs text-muted-foreground">(#{entry.patron_id})</span></> : <span className="text-muted-foreground">—</span>}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-slate-700">{patronEvent ? "—" : entry.quantity}</td>
+                  return <tr key={entry.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/70">
+                    <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-slate-300">{new Date(entry.occurred_at).toLocaleString()}</td>
+                    <td className="px-4 py-3"><TransactionType type={entry.transaction_type} extensionDays={entry.extension_days} /></td>
+                    <td className="px-4 py-3"><p className="font-medium text-slate-800 dark:text-slate-100">{patronEvent ? "Patron record" : entry.book_title || "—"}</p><p className="text-xs text-muted-foreground">{patronEvent ? "No book associated" : entry.book_id != null ? `Book ID: ${entry.book_id}` : "—"}</p></td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{entry.patron_name ? <>{entry.patron_name}<span className="ml-1 text-xs text-muted-foreground">(#{entry.patron_id})</span></> : <span className="text-muted-foreground">—</span>}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-700 dark:text-slate-300">{patronEvent ? "—" : entry.quantity}</td>
                   </tr>
                 })}</tbody>
               </table>
