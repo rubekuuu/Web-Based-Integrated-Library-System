@@ -1,6 +1,6 @@
-export function OrcaLoader() {
+export function OrcaLoader({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="orca-loader" role="status" aria-label="Loading">
+    <div className="orca-loader" role="status" aria-label={label}>
       <div className="orca-porthole">
         <div className="orca-orbit">
           <div className="orca-body">
