@@ -59,9 +59,14 @@ export async function readBookCover(key: string) {
   const config = getStorageConfig()
   const result = await getStorageClient().send(new GetObjectCommand({ Bucket: config.bucket, Key: key }))
   if (!result.Body) throw new Error("The stored book cover has no file content.")
+  const extension = key.split(".").pop()?.toLowerCase()
+  const inferredContentType = Object.entries(imageTypes).find(([, value]) => value === extension)?.[0]
   return {
     body: await result.Body.transformToByteArray(),
-    contentType: result.ContentType || "application/octet-stream",
+    contentType:
+      result.ContentType && result.ContentType !== "application/octet-stream"
+        ? result.ContentType
+        : inferredContentType || "application/octet-stream",
   }
 }
 
