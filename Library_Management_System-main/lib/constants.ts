@@ -1,0 +1,1 @@
+export const MAX_BORROWED_BOOKS_PER_PATRON = 5
