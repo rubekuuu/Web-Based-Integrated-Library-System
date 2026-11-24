@@ -120,7 +120,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
 
   const handleDeleteBook = async (book: Book) => {
     const res = await fetch(`/api/books?id=${book.id}`, { method: "DELETE" })
-    const result = await res.json()
+    const result = await readApiResponse(res)
     toast({
       title: result.success ? "Success" : "Error",
       description: result.message,
@@ -153,10 +153,10 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     })
-    const result = await res.json()
+    const result = await readApiResponse(res)
     const isDuplicate = !result.success && res.status === 409
     toast({
-      title: result.success ? "Success" : isDuplicate ? "Oops! Book already exists" : "Error",
+      title: result.success ? "Success" : isDuplicate ? "Oops! Patron already exists" : "Error",
       description: result.message,
       variant: result.success ? "default" : "destructive",
       className: isDuplicate
@@ -172,7 +172,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     })
-    const result = await res.json()
+    const result = await readApiResponse(res)
     toast({
       title: result.success ? "Success" : "Error",
       description: result.message,
@@ -184,7 +184,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
 
   const handleDeletePatron = async (patron: Patron) => {
     const res = await fetch(`/api/patrons?id=${patron.id}`, { method: "DELETE" })
-    const result = await res.json()
+    const result = await readApiResponse(res)
     toast({
       title: result.success ? "Success" : "Error",
       description: result.message,
@@ -201,7 +201,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "borrow", bookId, patronId, durationDays }),
     })
-    const result = await res.json()
+    const result = await readApiResponse(res)
     toast({
       title: result.success ? "Success" : "Error",
       description: result.message,
@@ -217,7 +217,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "return", bookId, patronId }),
     })
-    const result = await res.json()
+    const result = await readApiResponse(res)
     toast({
       title: result.success ? "Success" : "Error",
       description: result.message,

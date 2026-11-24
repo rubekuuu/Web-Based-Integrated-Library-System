@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -32,11 +32,16 @@ function BookMetadata({ author, year, genre }: Pick<BookCoverProps, "author" | "
 export function BookCover({ src, title, author, year, genre, className }: BookCoverProps) {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [hoverOpen, setHoverOpen] = useState(false)
+  const [imageFailed, setImageFailed] = useState(false)
+
+  useEffect(() => {
+    setImageFailed(false)
+  }, [src])
 
   const cover = (
     <div className={cn("relative flex h-full w-full shrink-0 items-center justify-center overflow-hidden rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300", className)}>
-      {src ? (
-        <Image src={src} alt={`Cover of ${title}`} fill sizes="(max-width: 640px) 80px, 112px" className="object-cover" />
+      {src && !imageFailed ? (
+        <Image src={src} alt={`Cover of ${title}`} fill sizes="(max-width: 640px) 80px, 112px" className="object-cover" onError={() => setImageFailed(true)} />
       ) : (
         <BookOpen aria-hidden="true" className="h-7 w-7" />
       )}
@@ -65,7 +70,7 @@ export function BookCover({ src, title, author, year, genre, className }: BookCo
           className="w-[min(24rem,calc(100vw-2rem))] border-emerald-100 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900"
         >
           <div className="flex min-w-0 items-start gap-3">
-            {src ? (
+            {src && !imageFailed ? (
               <Image
                 src={src}
                 alt={`Cover of ${title}`}
@@ -73,6 +78,7 @@ export function BookCover({ src, title, author, year, genre, className }: BookCo
                 height={144}
                 sizes="96px"
                 className="h-36 w-24 shrink-0 rounded-sm object-cover"
+                onError={() => setImageFailed(true)}
               />
             ) : (
               <div className="flex h-36 w-24 shrink-0 items-center justify-center rounded-sm bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
@@ -95,7 +101,7 @@ export function BookCover({ src, title, author, year, genre, className }: BookCo
             <DialogDescription>Book cover and details</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {src ? (
+            {src && !imageFailed ? (
               <Image
                 src={src}
                 alt={`Cover of ${title}`}
@@ -103,6 +109,7 @@ export function BookCover({ src, title, author, year, genre, className }: BookCo
                 height={540}
                 sizes="(max-width: 640px) 70vw, 360px"
                 className="mx-auto max-h-[45dvh] w-auto max-w-full rounded-md object-contain"
+                onError={() => setImageFailed(true)}
               />
             ) : (
               <div className="mx-auto flex h-48 w-32 items-center justify-center rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 sm:h-60 sm:w-40">
