@@ -97,7 +97,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       description: result.message,
       variant: result.success ? "default" : "destructive",
       className: isDuplicate
-        ? "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100" : undefined,
+        ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-100" : undefined,
     })
     if (result.success) refreshData()
     return result.success
@@ -160,7 +160,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       description: result.message,
       variant: result.success ? "default" : "destructive",
       className: isDuplicate
-        ? "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100" : undefined,
+        ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-100" : undefined,
     })
     if (result.success) refreshData()
     return result.success
