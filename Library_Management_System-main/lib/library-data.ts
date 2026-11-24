@@ -257,8 +257,8 @@ export async function returnBook(bookId: number, patronId: number): Promise<{ su
 
 export async function extendBookLoan(bookId: number, extensionDays = 1): Promise<{ success: boolean; message: string }> {
   await ensureDatabaseSchema()
-  if (!Number.isInteger(extensionDays) || extensionDays < 1) {
-    return { success: false, message: "Extension duration must be a positive whole number of days." }
+  if (!Number.isInteger(extensionDays) || extensionDays < 1 || extensionDays > 7) {
+    return { success: false, message: "Extension duration must be a whole number between 1 and 7 days." }
   }
 
   const [book] = await sql`SELECT title FROM books WHERE id = ${bookId}`

@@ -137,10 +137,12 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
       body: JSON.stringify({ action: "extend", bookId, extensionDays }),
     })
     const result = await readApiResponse(res)
+    const isInvalidDuration = !result.success && res.status === 400 && result.message.includes("Extension duration")  
     toast({
-      title: result.success ? "Success" : "Error",
+      title: result.success ? "Success" : "Invalid Extension Duration",
       description: result.message,
       variant: result.success ? "default" : "destructive",
+      className: isInvalidDuration ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-100" : undefined,
     })
     if (result.success) refreshData()
     return result.success

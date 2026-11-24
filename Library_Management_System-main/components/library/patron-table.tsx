@@ -203,7 +203,7 @@ export function PatronTable({ patrons, books, onEdit, onDelete, onExtend }: Patr
             </DialogTitle>
             <DialogDescription>
               {selectedPatron
-                ? `${selectedPatron.books_checked_out.length} of ${MAX_BORROWED_BOOKS_PER_PATRON} books checked out · Patron ID ${selectedPatron.id} · Extension defaults to 1 day`
+                ? `${selectedPatron.books_checked_out.length} of ${MAX_BORROWED_BOOKS_PER_PATRON} books checked out · Patron ID ${selectedPatron.id} · Max extension: 7 days`
                 : ""}
             </DialogDescription>
           </DialogHeader>
@@ -215,7 +215,7 @@ export function PatronTable({ patrons, books, onEdit, onDelete, onExtend }: Patr
                   const title = book?.title ?? `Book #${bookId}`
                   const extensionDays = extensionDaysByBookId[bookId] ?? "1"
                   const extensionDuration = Number(extensionDays)
-                  const canExtend = Number.isInteger(extensionDuration) && extensionDuration > 0
+                  const canExtend = Number.isInteger(extensionDuration) && extensionDuration >= 1 
                   const status = book?.is_overdue ? "Overdue" : book?.is_extended ? "Extended" : "Checked Out"
 
                   return (
