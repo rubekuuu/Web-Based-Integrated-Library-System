@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Pencil, Trash2, Search, ChevronUp, ChevronDown } from "lucide-react"
+import { BookCover } from "./book-cover"
+import { Pencil, Trash2, Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 
+const PAGE_SIZE = 20
 interface BookTableProps {
   books: Book[]
   onEdit: (book: Book) => void
@@ -44,6 +46,7 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
   const [statusFilter, setStatusFilter] = useState<"all" | "Available" | "Checked Out" | "Overdue">("all")
   const [sortField, setSortField] = useState<SortField>("id")
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [page, setPage] = useState(1)
 
   const filteredBooks = safeBooks
     .filter((book) => {
@@ -76,7 +79,14 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
       setSortField(field)
       setSortDirection("asc")
     }
+    setPage(1)
   }
+
+  const pageCount = Math.max(1, Math.ceil(filteredBooks.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const pageBooks = filteredBooks.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const firstResult = filteredBooks.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
+  const lastResult = Math.min(currentPage * PAGE_SIZE, filteredBooks.length)
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null
@@ -91,7 +101,10 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
           <Input
             placeholder="Search by title, author, genre, or ID..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
             className="pl-9"
           />
         </div>
@@ -99,28 +112,40 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
           <Button
             variant={statusFilter === "all" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("all")}
+            onClick={() => {
+              setStatusFilter("all")
+              setPage(1)
+            }}
           >
             All
           </Button>
           <Button
             variant={statusFilter === "Available" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("Available")}
+            onClick={() => {
+              setStatusFilter("Available")
+              setPage(1)
+            }}
           >
             Available
           </Button>
           <Button
             variant={statusFilter === "Checked Out" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("Checked Out")}
+            onClick={() => {
+              setStatusFilter("Checked Out")
+              setPage(1)
+            }}
           >
             Checked Out
           </Button>
           <Button
             variant={statusFilter === "Overdue" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("Overdue")}
+            onClick={() => {
+              setStatusFilter("Overdue")
+              setPage(1)
+            }}
           >
             Overdue
           </Button>
@@ -128,32 +153,34 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
       </div>
 
       <div className="rounded-md border">
-        <Table>
+        <Table className="min-w-[68.5rem] table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("id")}>
+              <TableHead className="w-16 cursor-pointer" onClick={() => handleSort("id")}>
                 <div className="flex items-center gap-1">ID <SortIcon field="id" /></div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("title")}>
+              <TableHead className="w-[15rem] cursor-pointer" onClick={() => handleSort("title")}>
                 <div className="flex items-center gap-1">Title <SortIcon field="title" /></div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("author")}>
+              <TableHead className="w-[8.5rem] cursor-pointer" onClick={() => handleSort("author")}>
                 <div className="flex items-center gap-1">Author <SortIcon field="author" /></div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("genre")}>
+              <TableHead className="w-[6.5rem] cursor-pointer" onClick={() => handleSort("genre")}>
                 <div className="flex items-center gap-1">Genre <SortIcon field="genre" /></div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("year")}>
+              <TableHead className="w-16 cursor-pointer" onClick={() => handleSort("year")}>
                 <div className="flex items-center gap-1">Year <SortIcon field="year" /></div>
               </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("status")}>
+              <TableHead className="w-28 cursor-pointer" onClick={() => handleSort("status")}>
                 <div className="flex items-center gap-1">Status <SortIcon field="status" /></div>
               </TableHead>
-              <TableHead>Borrowed Date &amp; Time</TableHead>
-              <TableHead className="cursor-pointer" onClick={() => handleSort("due_return_date")}>
-                <div className="flex items-center gap-1">Due Return Date <SortIcon field="due_return_date" /></div>
+              <TableHead className="w-[10.5rem]">Borrowed Date &amp; Time</TableHead>
+              <TableHead className="w-[6.5rem] cursor-pointer" onClick={() => handleSort("due_return_date")}>
+                <div className="flex items-center gap-1">Due Date <SortIcon field="due_return_date" /></div>
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="sticky right-0 z-20 w-[6.5rem] bg-background text-right shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.25)]">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -164,14 +191,32 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredBooks.map((book) => (
-                <TableRow key={book.id}>
-                  <TableCell className="font-medium">{book.id}</TableCell>
-                  <TableCell className="font-medium">{book.title}</TableCell>
-                  <TableCell>{book.author}</TableCell>
-                  <TableCell>{book.genre}</TableCell>
-                  <TableCell>{book.year}</TableCell>
-                  <TableCell>
+              pageBooks.map((book) => (
+                <TableRow key={book.id} className="group">
+                  <TableCell className="w-16 font-medium">{book.id}</TableCell>
+                  <TableCell className="w-[15rem] max-w-[15rem] overflow-hidden">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <BookCover
+                        src={book.cover_image}
+                        title={book.title}
+                        author={book.author}
+                        year={book.year}
+                        genre={book.genre}
+                        className="h-14 w-10 rounded-md"
+                      />
+                      <span className="block min-w-0 flex-1 truncate font-medium" title={book.title}>
+                        {book.title}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="w-[8.5rem] max-w-[8.5rem] overflow-hidden">
+                    <span className="block truncate" title={book.author}>{book.author}</span>
+                  </TableCell>
+                  <TableCell className="w-[6.5rem] max-w-[6.5rem] overflow-hidden">
+                    <span className="block truncate" title={book.genre}>{book.genre}</span>
+                  </TableCell>
+                  <TableCell className="w-16">{book.year}</TableCell>
+                  <TableCell className="w-28">
                     <Badge
                       variant={book.status === "Available" && !book.is_overdue ? "default" : "secondary"}
                       className={
@@ -185,13 +230,13 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
                       {book.is_overdue ? "Overdue" : book.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
+                  <TableCell className="w-[10.5rem] text-muted-foreground text-sm">
                     {formatBorrowedDate(book.borrowed_date)}
                   </TableCell>
-                  <TableCell className={book.is_overdue ? "text-red-600 font-medium text-sm" : "text-muted-foreground text-sm"}>
+                  <TableCell className={`w-[6.5rem] text-sm ${book.is_overdue ? "font-medium text-red-600" : "text-muted-foreground"}`}>
                     {book.due_return_date || "-"}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="sticky right-0 z-10 w-[6.5rem] bg-background text-right shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.25)] group-hover:bg-muted/50">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => onEdit(book)}>
                         <Pencil className="h-4 w-4" />
@@ -213,8 +258,39 @@ export function BookTable({ books, onEdit, onDelete }: BookTableProps) {
         </Table>
       </div>
       <p className="text-sm text-muted-foreground">
-        Showing {filteredBooks.length} of {books.length} books
+        Showing {firstResult}–{lastResult} of {filteredBooks.length} matching books ({safeBooks.length} total)
       </p>
+      {pageCount > 1 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Page {currentPage} of {pageCount} · {PAGE_SIZE} books per page
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              aria-label="Previous books page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(currentPage + 1)}
+              disabled={currentPage === pageCount}
+              aria-label="Next books page"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

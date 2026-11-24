@@ -127,6 +127,22 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
     setDeleteBookConfirm(null)
   }
 
+  const handleExtendBook = async (bookId: number, extensionDays: number) => {
+    const res = await fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "extend", bookId, extensionDays }),
+    })
+    const result = await readApiResponse(res)
+    toast({
+      title: result.success ? "Success" : "Error",
+      description: result.message,
+      variant: result.success ? "default" : "destructive",
+    })
+    if (result.success) refreshData()
+    return result.success
+  }
+
   // Patron operations
   const handleAddPatron = async (data: { id: number; name: string }) => {
     const res = await fetch("/api/patrons", {
@@ -234,19 +250,19 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
   const isLoading = booksLoading || patronsLoading
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50/40 pb-16 md:pb-0">
-      <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 backdrop-blur">
+    <div className="flex min-h-screen flex-col bg-slate-50/40 pb-16 dark:bg-slate-950 md:pb-0">
+      <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
         <div className="container mx-auto px-4">
           <div className="flex min-h-20 items-center justify-between gap-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 p-1 ring-1 ring-emerald-100">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 p-1 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:ring-emerald-900">
                 <Image src="/ORCA-green.png" alt="ORCA logo" width={44} height={44} className="h-10 w-10 object-contain" priority />
               </div>
               <div className="min-w-0">
                 <h1 className="truncate text-sm font-bold tracking-tight sm:text-lg">
                   ORCA
                 </h1>
-                <p className="hidden text-xs text-slate-500 sm:block">
+                <p className="hidden text-xs text-slate-500 dark:text-slate-400 sm:block">
                   Organized Resource &amp; Catalog System
                 </p>
               </div>
@@ -260,8 +276,8 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
         {page === "home" && (
           <section>
             <div className="mb-6">
-              <p className="text-sm font-medium text-emerald-700">Dashboard</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Library overview</h2>
+              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Dashboard</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Library overview</h2>
             </div>
             {isLoading || statsLoading ? (
               <div className="space-y-4">
@@ -270,7 +286,7 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-hidden="true">
                   {[0, 1, 2, 3].map((item) => (
-                    <div key={item} className="h-32 animate-pulse rounded-xl border border-emerald-100 bg-emerald-50/40" />
+                    <div key={item} className="h-32 animate-pulse rounded-xl border border-emerald-100 bg-emerald-50/40 dark:border-slate-800 dark:bg-slate-900" />
                   ))}
                 </div>
               </div>
@@ -279,27 +295,34 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[0, 1, 2, 3].map((item) => (
-                  <div key={item} className="h-32 animate-pulse rounded-xl border border-emerald-100 bg-emerald-50/40" />
+                  <div key={item} className="h-32 animate-pulse rounded-xl border border-emerald-100 bg-emerald-50/40 dark:border-slate-800 dark:bg-slate-900" />
                 ))}
               </div>
             )}
             {stats && (
               <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                <Card className="border-emerald-100 shadow-sm">
+                <Card className="border-emerald-100 shadow-sm dark:border-slate-800">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                     <CardTitle className="text-sm font-medium">Most Recently Added</CardTitle>
-                    <span className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
+                    <span className="rounded-lg bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                       <BookOpen className="h-4 w-4" />
                     </span>
                   </CardHeader>
                   <CardContent>
                     {stats.recent_book ? (
                       <div className="flex items-center gap-4">
-                        <BookCover src={stats.recent_book.cover_image} title={stats.recent_book.title} className="h-28 w-20" />
+                        <BookCover
+                          src={stats.recent_book.cover_image}
+                          title={stats.recent_book.title}
+                          author={stats.recent_book.author}
+                          year={stats.recent_book.year}
+                          genre={stats.recent_book.genre}
+                          className="h-28 w-20"
+                        />
                         <div className="min-w-0">
-                          <p className="truncate text-lg font-semibold text-slate-900">{stats.recent_book.title}</p>
+                          <p className="truncate text-lg font-semibold text-slate-900 dark:text-slate-100">{stats.recent_book.title}</p>
                           <p className="mt-1 truncate text-sm text-muted-foreground">{stats.recent_book.author}</p>
-                          <p className="mt-3 text-xs text-emerald-700">
+                          <p className="mt-3 text-xs text-emerald-700 dark:text-emerald-300">
                             {stats.recent_book.genre} · {stats.recent_book.year} · ID {stats.recent_book.id}
                           </p>
                         </div>
@@ -310,21 +333,28 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
                   </CardContent>
                 </Card>
 
-                <Card className="border-emerald-100 shadow-sm">
+                <Card className="border-emerald-100 shadow-sm dark:border-slate-800">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                     <CardTitle className="text-sm font-medium">Most Borrowed Book</CardTitle>
-                    <span className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
+                    <span className="rounded-lg bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                       <TrendingUp className="h-4 w-4" />
                     </span>
                   </CardHeader>
                   <CardContent>
                     {stats.most_borrowed_book ? (
                       <div className="flex items-center gap-4">
-                        <BookCover src={stats.most_borrowed_book.cover_image} title={stats.most_borrowed_book.title} className="h-28 w-20" />
+                        <BookCover
+                          src={stats.most_borrowed_book.cover_image}
+                          title={stats.most_borrowed_book.title}
+                          author={stats.most_borrowed_book.author}
+                          year={stats.most_borrowed_book.year}
+                          genre={stats.most_borrowed_book.genre}
+                          className="h-28 w-20"
+                        />
                         <div className="min-w-0">
-                          <p className="truncate text-lg font-semibold text-slate-900">{stats.most_borrowed_book.title}</p>
+                          <p className="truncate text-lg font-semibold text-slate-900 dark:text-slate-100">{stats.most_borrowed_book.title}</p>
                           <p className="mt-1 truncate text-sm text-muted-foreground">{stats.most_borrowed_book.author}</p>
-                          <p className="mt-3 text-xs text-emerald-700">
+                          <p className="mt-3 text-xs text-emerald-700 dark:text-emerald-300">
                             {stats.most_borrowed_book.borrow_count} checkout{stats.most_borrowed_book.borrow_count === 1 ? "" : "s"} recorded · ID {stats.most_borrowed_book.id}
                           </p>
                         </div>
@@ -343,11 +373,11 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
           <section>
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-700">Collection</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Books</h2>
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Collection</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Books</h2>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 border-emerald-200 sm:flex-none" onClick={() => handleExport("books")}>
+                <Button variant="outline" className="flex-1 border-emerald-200 dark:border-slate-700 sm:flex-none" onClick={() => handleExport("books")}>
                   <Download className="mr-2 h-4 w-4" />
                   Export CSV
                 </Button>
@@ -359,14 +389,9 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
             </div>
             {isLoading ? (
               <div
-                className="flex h-64 items-center justify-center rounded-xl border border-emerald-100 bg-white"
-                role="status"
-                aria-label="Loading books"
+                className="flex h-64 items-center justify-center rounded-xl border border-emerald-100 bg-white dark:border-slate-800 dark:bg-slate-900"
               >
-                <div className="flex flex-col items-center gap-3">
-                  <OrcaLoader />
-                  <div className="loader" aria-hidden="true" />
-                </div>
+                <OrcaLoader label="Loading books" />
               </div>
             ) : (
               <BookTable books={books} onEdit={openEditBook} onDelete={(book) => setDeleteBookConfirm(book)} />
@@ -378,11 +403,11 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
           <section>
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-700">Members</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Patrons</h2>
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Members</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Patrons</h2>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 border-emerald-200 sm:flex-none" onClick={() => handleExport("patrons")}>
+                <Button variant="outline" className="flex-1 border-emerald-200 dark:border-slate-700 sm:flex-none" onClick={() => handleExport("patrons")}>
                   <Download className="mr-2 h-4 w-4" />
                   Export CSV
                 </Button>
@@ -393,12 +418,18 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
               </div>
             </div>
             {isLoading ? (
-              <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-emerald-100 bg-white text-muted-foreground">
+              <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-emerald-100 bg-white text-muted-foreground dark:border-slate-800 dark:bg-slate-900">
                 <OrcaLoader />
                 <span>Loading patrons...</span>
               </div>
             ) : (
-              <PatronTable patrons={patrons} books={books} onEdit={openEditPatron} onDelete={(patron) => setDeletePatronConfirm(patron)} />
+              <PatronTable
+                patrons={patrons}
+                books={books}
+                onEdit={openEditPatron}
+                onDelete={(patron) => setDeletePatronConfirm(patron)}
+                onExtend={handleExtendBook}
+              />
             )}
           </section>
         )}
@@ -406,11 +437,11 @@ export function LibraryDashboard({ page }: { page: LibraryPage }) {
         {page === "transactions" && (
           <section>
             <div className="mb-5">
-              <p className="text-sm font-medium text-emerald-700">Circulation</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Transactions</h2>
+              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Circulation</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Transactions</h2>
             </div>
             {isLoading ? (
-              <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-emerald-100 bg-white text-muted-foreground">
+              <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-emerald-100 bg-white text-muted-foreground dark:border-slate-800 dark:bg-slate-900">
                 <OrcaLoader />
                 <span>Loading transactions...</span>
               </div>
